@@ -1,6 +1,6 @@
 # Amplify AI (MVP)
 
-Amplify AI helps real estate agents convert more leads into viewings and deals by replying instantly, automating follow-ups, and re-engaging lost prospects so no opportunity is missed.
+ Amplify AI helps real estate agents convert more leads into viewings and deals by automating follow-ups and re-engaging lost prospects so no opportunity is missed.
 
 ## Tech stack
 
@@ -45,4 +45,4 @@ Visit:
 - **Auth**: `/signup`, `/login`, sign out from app header
 - **Leads**: list, create, detail view with conversation history
 - **Messages**: save inbound/outbound messages
-- **AI auto-reply**: when you save an inbound message, it can call `/api/ai/reply` to generate + store an outbound reply
+ - **AI follow-ups for lost leads**: for cold / inactive leads, you can call `/api/ai/reply` to generate + store a follow-up message

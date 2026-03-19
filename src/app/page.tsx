@@ -11,14 +11,15 @@ export default function Home() {
             </div>
 
             <h1 className="text-balance text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
-              Amplify AI helps real estate agents reply instantly, follow up
-              automatically, and re-engage cold leads.
+              Amplify AI helps real estate agents follow up automatically and
+              re-engage cold leads.
             </h1>
 
             <p className="max-w-2xl text-pretty text-lg leading-8 text-zinc-600">
-              Centralize every lead, message, and follow-up. When a new message
-              arrives, generate a high-quality reply with your preferred tone
-              and templates—without exposing your OpenAI key to the browser.
+              Centralize every lead, message, and follow-up. For cold or lost
+              leads, generate high-quality re-engagement messages with your
+              preferred tone and templates—without exposing your OpenAI key to
+              the browser.
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

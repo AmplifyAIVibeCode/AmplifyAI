@@ -62,6 +62,12 @@ export async function POST(req: Request) {
     ]);
 
   if (!lead) return new NextResponse("Lead not found.", { status: 404 });
+  if (lead.status !== "cold") {
+    return new NextResponse(
+      "AI follow-ups are only allowed for cold (lost) leads.",
+      { status: 400 },
+    );
+  }
   if (!inbound || inbound.direction !== "inbound") {
     return new NextResponse("Inbound message not found.", { status: 404 });
   }
@@ -69,9 +75,10 @@ export async function POST(req: Request) {
   const systemPrompt =
     template?.system_prompt ??
     [
-      "You are an assistant helping a real estate agent reply to leads.",
-      "Write a concise, friendly, professional reply in plain text.",
-      "Ask one clarifying question if needed, and suggest one next step (call, viewing, or availability).",
+      "You are an assistant helping a real estate agent re-engage cold, previously unresponsive (lost) leads.",
+      "Write a concise, friendly, professional follow-up message in plain text.",
+      "Assume the lead has not recently spoken with the agent and may have gone quiet.",
+      "Ask at most one gentle clarifying question if useful, and suggest one next step (call, viewing, or availability).",
       "Do not mention you are an AI. Do not invent facts.",
     ].join("\n");
 
@@ -91,10 +98,10 @@ export async function POST(req: Request) {
     "Recent conversation:",
     conversationForModel || "(none)",
     "",
-    "Latest inbound message:",
+    "Latest inbound message (from when the lead was active):",
     inbound.body,
     "",
-    "Write the agent's reply now.",
+    "Write the agent's follow-up message now, tailored to a lost/cold lead.",
   ].join("\n");
 
   const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });

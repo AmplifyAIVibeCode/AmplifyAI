@@ -52,8 +52,8 @@ export default async function DashboardPage() {
         <div className="text-sm font-medium text-zinc-950">Next steps</div>
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-zinc-700">
           <li>Create your first lead in the Leads tab.</li>
-          <li>Paste a message to generate an AI reply via templates.</li>
-          <li>Schedule a follow-up for leads who go quiet.</li>
+          <li>Schedule follow-ups for leads who go quiet.</li>
+          <li>Use AI follow-ups only for cold / lost leads you want to re-engage.</li>
         </ul>
       </Card>
     </div>

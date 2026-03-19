@@ -7,11 +7,20 @@ import { Button } from "@/components/ui/button";
 
 type Direction = "inbound" | "outbound";
 
-export function LeadMessageComposer({ leadId }: { leadId: string }) {
+type LeadStatus = "hot" | "warm" | "cold";
+
+export function LeadMessageComposer({
+  leadId,
+  leadStatus,
+}: {
+  leadId: string;
+  leadStatus: LeadStatus;
+}) {
   const router = useRouter();
   const [direction, setDirection] = useState<Direction>("inbound");
   const [body, setBody] = useState("");
-  const [generateReply, setGenerateReply] = useState(true);
+  const isColdLead = leadStatus === "cold";
+  const [generateReply, setGenerateReply] = useState(isColdLead);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +46,7 @@ export function LeadMessageComposer({ leadId }: { leadId: string }) {
 
       setBody("");
 
-      if (direction === "inbound" && generateReply) {
+      if (direction === "inbound" && generateReply && isColdLead) {
         const resp = await fetch("/api/ai/reply", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -112,9 +121,9 @@ export function LeadMessageComposer({ leadId }: { leadId: string }) {
           className="h-4 w-4 rounded border-zinc-300"
           checked={generateReply}
           onChange={(e) => setGenerateReply(e.target.checked)}
-          disabled={direction !== "inbound"}
+          disabled={direction !== "inbound" || !isColdLead}
         />
-        Generate AI reply after saving inbound message
+        Generate AI follow-up (only for cold / lost leads)
       </label>
 
       {error ? (

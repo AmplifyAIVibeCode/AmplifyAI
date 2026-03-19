@@ -68,8 +68,8 @@ export default async function LeadDetailPage({
           <div className="flex flex-1 flex-col gap-3 overflow-auto p-5">
             {(messages ?? []).length === 0 ? (
               <div className="text-sm text-zinc-600">
-                No messages yet. Add the lead&apos;s first message to generate a
-                reply.
+                No messages yet. You can log past messages or send a follow-up
+                to re-engage this lead.
               </div>
             ) : (
               messages!.map((m) => (
@@ -103,10 +103,11 @@ export default async function LeadDetailPage({
           <Card className="p-5">
             <div className="text-sm font-medium text-zinc-950">Send message</div>
             <div className="mt-1 text-sm text-zinc-600">
-              Save inbound/outbound messages and optionally generate an AI reply.
+              Save inbound/outbound messages and, for cold leads, optionally
+              generate an AI follow-up.
             </div>
             <div className="mt-4">
-              <LeadMessageComposer leadId={lead.id} />
+              <LeadMessageComposer leadId={lead.id} leadStatus={lead.status} />
             </div>
           </Card>
         </div>
