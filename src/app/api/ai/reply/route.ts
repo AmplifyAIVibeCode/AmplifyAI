@@ -6,9 +6,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
   leadId: z.string().uuid(),
-  inboundMessageId: z.string().uuid(),
 });
 
+/**
+ * Generates an AI message SUGGESTION for a lead.
+ * Does NOT auto-save — the user decides to send, edit, or skip.
+ */
 export async function POST(req: Request) {
   const env = getServerEnv();
 
@@ -31,56 +34,31 @@ export async function POST(req: Request) {
     );
   }
 
-  const { leadId, inboundMessageId } = parsed.data;
+  const { leadId } = parsed.data;
 
-  const [{ data: lead }, { data: inbound }, { data: recentMessages }, { data: template }] =
-    await Promise.all([
-      supabase
-        .from("leads")
-        .select("id, full_name, email, phone, status")
-        .eq("id", leadId)
-        .single(),
-      supabase
-        .from("lead_messages")
-        .select("id, lead_id, direction, body, created_at")
-        .eq("id", inboundMessageId)
-        .eq("lead_id", leadId)
-        .single(),
-      supabase
-        .from("lead_messages")
-        .select("direction, body, created_at")
-        .eq("lead_id", leadId)
-        .order("created_at", { ascending: false })
-        .limit(12),
-      supabase
-        .from("response_templates")
-        .select("system_prompt")
-        .eq("is_default", true)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
+  const [{ data: lead }, { data: recentMessages }] = await Promise.all([
+    supabase
+      .from("leads")
+      .select("id, full_name, phone, status, intent, budget_min, budget_max, property_type, urgency")
+      .eq("id", leadId)
+      .single(),
+    supabase
+      .from("lead_messages")
+      .select("direction, body, created_at")
+      .eq("lead_id", leadId)
+      .order("created_at", { ascending: false })
+      .limit(12),
+  ]);
 
   if (!lead) return new NextResponse("Lead not found.", { status: 404 });
-  if (lead.status !== "cold") {
-    return new NextResponse(
-      "AI follow-ups are only allowed for cold (lost) leads.",
-      { status: 400 },
-    );
-  }
-  if (!inbound || inbound.direction !== "inbound") {
-    return new NextResponse("Inbound message not found.", { status: 404 });
-  }
 
-  const systemPrompt =
-    template?.system_prompt ??
-    [
-      "You are an assistant helping a real estate agent re-engage cold, previously unresponsive (lost) leads.",
-      "Write a concise, friendly, professional follow-up message in plain text.",
-      "Assume the lead has not recently spoken with the agent and may have gone quiet.",
-      "Ask at most one gentle clarifying question if useful, and suggest one next step (call, viewing, or availability).",
-      "Do not mention you are an AI. Do not invent facts.",
-    ].join("\n");
+  const systemPrompt = [
+    "You are an assistant helping a real estate agent communicate with leads.",
+    "Write a concise, friendly, professional follow-up message in plain text.",
+    "Tailor the message to the lead's intent and conversation history.",
+    "Ask at most one gentle clarifying question if useful, and suggest one next step (call, viewing, or availability).",
+    "Do not mention you are an AI. Do not invent facts.",
+  ].join("\n");
 
   const conversationForModel = (recentMessages ?? [])
     .slice()
@@ -91,18 +69,22 @@ export async function POST(req: Request) {
   const userPrompt = [
     "Lead context:",
     `- Name: ${lead.full_name ?? "Unknown"}`,
-    `- Email: ${lead.email ?? "Unknown"}`,
     `- Phone: ${lead.phone ?? "Unknown"}`,
     `- Status: ${String(lead.status)}`,
+    `- Intent: ${String(lead.intent ?? "unknown")}`,
+    lead.budget_min || lead.budget_max
+      ? `- Budget: ${lead.budget_min ?? "?"} – ${lead.budget_max ?? "?"}`
+      : "",
+    lead.property_type ? `- Property type: ${lead.property_type}` : "",
+    lead.urgency ? `- Urgency: ${lead.urgency}/10` : "",
     "",
     "Recent conversation:",
     conversationForModel || "(none)",
     "",
-    "Latest inbound message (from when the lead was active):",
-    inbound.body,
-    "",
-    "Write the agent's follow-up message now, tailored to a lost/cold lead.",
-  ].join("\n");
+    "Write the agent's follow-up message now.",
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
   const model = env.OPENAI_REPLY_MODEL ?? "gpt-4.1-mini";
@@ -116,22 +98,10 @@ export async function POST(req: Request) {
     temperature: 0.5,
   });
 
-  const reply = completion.choices[0]?.message?.content?.trim();
-  if (!reply) return new NextResponse("No reply generated.", { status: 502 });
+  const suggestion = completion.choices[0]?.message?.content?.trim();
+  if (!suggestion)
+    return new NextResponse("No suggestion generated.", { status: 502 });
 
-  const { error: insertError } = await supabase.from("lead_messages").insert({
-    lead_id: leadId,
-    direction: "outbound",
-    body: reply,
-  });
-
-  if (insertError) {
-    return NextResponse.json(
-      { error: "Failed to save AI reply.", details: insertError.message },
-      { status: 500 },
-    );
-  }
-
-  return NextResponse.json({ reply });
+  // Return suggestion only — DO NOT save to DB
+  return NextResponse.json({ suggestion });
 }
-

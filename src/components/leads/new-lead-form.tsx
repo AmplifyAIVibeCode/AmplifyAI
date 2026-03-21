@@ -11,7 +11,6 @@ type LeadStatus = "hot" | "warm" | "cold";
 export function NewLeadForm() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<LeadStatus>("warm");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +28,6 @@ export function NewLeadForm() {
         .from("leads")
         .insert({
           full_name: fullName || null,
-          email: email || null,
           phone: phone || null,
           status,
         })
@@ -59,30 +57,6 @@ export function NewLeadForm() {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-zinc-900">Status</label>
-          <select
-            className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-900/10"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as LeadStatus)}
-          >
-            <option value="hot">Hot</option>
-            <option value="warm">Warm</option>
-            <option value="cold">Cold</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-zinc-900">Email</label>
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="lead@example.com"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-zinc-900">Phone</label>
           <Input
             value={phone}
@@ -90,6 +64,19 @@ export function NewLeadForm() {
             placeholder="+1 (555) 555-5555"
           />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-zinc-900">Status</label>
+        <select
+          className="h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-900/10"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as LeadStatus)}
+        >
+          <option value="hot">Hot</option>
+          <option value="warm">Warm</option>
+          <option value="cold">Cold</option>
+        </select>
       </div>
 
       {error ? (
@@ -113,4 +100,3 @@ export function NewLeadForm() {
     </form>
   );
 }
-

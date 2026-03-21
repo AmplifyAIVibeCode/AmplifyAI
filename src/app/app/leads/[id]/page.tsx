@@ -2,13 +2,21 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { LeadMessageComposer } from "@/components/leads/message-composer";
+import { LeadAnalysisPanel } from "@/components/leads/analysis-panel";
 
 type LeadRow = {
   id: string;
   full_name: string | null;
-  email: string | null;
   phone: string | null;
   status: "hot" | "warm" | "cold";
+  intent: string;
+  budget_min: number | null;
+  budget_max: number | null;
+  property_type: string | null;
+  urgency: number;
+  interest_signals: string | null;
+  score: number;
+  last_interaction: string | null;
   created_at: string;
 };
 
@@ -31,7 +39,9 @@ export default async function LeadDetailPage({
   const [{ data: lead }, { data: messages }] = await Promise.all([
     supabase
       .from("leads")
-      .select("id, full_name, email, phone, status, created_at")
+      .select(
+        "id, full_name, phone, status, intent, budget_min, budget_max, property_type, urgency, interest_signals, score, last_interaction, created_at",
+      )
       .eq("id", id)
       .single<LeadRow>(),
     supabase
@@ -44,6 +54,23 @@ export default async function LeadDetailPage({
 
   if (!lead) return notFound();
 
+  const analysis =
+    lead.intent !== "unknown" ||
+    lead.budget_min ||
+    lead.budget_max ||
+    lead.urgency > 0
+      ? {
+          intent: lead.intent,
+          budget_min: lead.budget_min,
+          budget_max: lead.budget_max,
+          property_type: lead.property_type,
+          urgency: lead.urgency,
+          interest_signals: lead.interest_signals,
+          score: lead.score,
+          status: lead.status,
+        }
+      : null;
+
   return (
     <div className="flex w-full flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -54,13 +81,15 @@ export default async function LeadDetailPage({
           <span className="rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
             {lead.status.toUpperCase()}
           </span>
-          <span>{lead.email ?? ""}</span>
-          {lead.email && lead.phone ? <span>•</span> : null}
-          <span>{lead.phone ?? ""}</span>
+          <span className="font-semibold text-zinc-700">
+            Score: {lead.score}/100
+          </span>
+          {lead.phone && <span>• {lead.phone}</span>}
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        {/* Conversation */}
         <Card className="flex min-h-[520px] flex-col overflow-hidden">
           <div className="border-b border-zinc-200 bg-zinc-50 px-5 py-3 text-sm font-medium text-zinc-700">
             Conversation
@@ -68,8 +97,7 @@ export default async function LeadDetailPage({
           <div className="flex flex-1 flex-col gap-3 overflow-auto p-5">
             {(messages ?? []).length === 0 ? (
               <div className="text-sm text-zinc-600">
-                No messages yet. You can log past messages or send a follow-up
-                to re-engage this lead.
+                No messages yet. Log a message or generate an AI suggestion.
               </div>
             ) : (
               messages!.map((m) => (
@@ -99,15 +127,31 @@ export default async function LeadDetailPage({
           </div>
         </Card>
 
+        {/* Sidebar */}
         <div className="flex flex-col gap-4">
+          {/* AI Analysis */}
           <Card className="p-5">
-            <div className="text-sm font-medium text-zinc-950">Send message</div>
+            <div className="text-sm font-medium text-zinc-950">
+              AI Analysis
+            </div>
             <div className="mt-1 text-sm text-zinc-600">
-              Save inbound/outbound messages and, for cold leads, optionally
-              generate an AI follow-up.
+              Intent, budget, urgency, and scoring
             </div>
             <div className="mt-4">
-              <LeadMessageComposer leadId={lead.id} leadStatus={lead.status} />
+              <LeadAnalysisPanel leadId={lead.id} analysis={analysis} />
+            </div>
+          </Card>
+
+          {/* Message Composer */}
+          <Card className="p-5">
+            <div className="text-sm font-medium text-zinc-950">
+              Send message
+            </div>
+            <div className="mt-1 text-sm text-zinc-600">
+              Write a message or generate an AI suggestion.
+            </div>
+            <div className="mt-4">
+              <LeadMessageComposer leadId={lead.id} />
             </div>
           </Card>
         </div>
@@ -115,4 +159,3 @@ export default async function LeadDetailPage({
     </div>
   );
 }
-

@@ -30,18 +30,6 @@ export default async function AppLayout({
               >
                 Leads
               </Link>
-              <Link
-                className="text-zinc-700 hover:text-zinc-950"
-                href="/app/follow-ups"
-              >
-                Follow-ups
-              </Link>
-              <Link
-                className="text-zinc-700 hover:text-zinc-950"
-                href="/app/templates"
-              >
-                Templates
-              </Link>
             </nav>
           </div>
 
