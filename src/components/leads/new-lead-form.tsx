@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 
 type LeadStatus = "hot" | "warm" | "cold";
 
-export function NewLeadForm() {
+export function NewLeadForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -36,8 +36,12 @@ export function NewLeadForm() {
 
       if (insertError) throw insertError;
 
-      router.push(`/app/leads/${data.id}`);
-      router.refresh();
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push(`/app/leads/${data.id}`);
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to create lead.");
     } finally {

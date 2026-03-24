@@ -9,10 +9,10 @@ export function Button({ className, variant = "primary", ...props }: Props) {
   return (
     <button
       className={cn(
-        "inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60",
-        variant === "primary" && "bg-zinc-950 text-white hover:bg-zinc-800",
+        "inline-flex h-10 items-center justify-center rounded-xl px-5 text-base font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-primary/20",
+        variant === "primary" && "bg-zinc-900 text-white hover:bg-zinc-800",
         variant === "secondary" &&
-          "border border-zinc-200 bg-white text-zinc-950 hover:bg-zinc-50",
+          "border border-zinc-100 bg-white text-zinc-900 hover:bg-zinc-50",
         variant === "ghost" && "text-zinc-700 hover:bg-zinc-100",
         className,
       )}

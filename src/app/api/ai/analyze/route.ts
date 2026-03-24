@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { getServerEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -12,8 +12,8 @@ const bodySchema = z.object({
 export async function POST(req: Request) {
   const env = getServerEnv();
 
-  if (!env.OPENAI_API_KEY) {
-    return new NextResponse("Missing OPENAI_API_KEY.", { status: 500 });
+  if (!env.ANTHROPIC_API_KEY) {
+    return new NextResponse("Missing ANTHROPIC_API_KEY.", { status: 500 });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -52,8 +52,8 @@ export async function POST(req: Request) {
     .map((m) => `${m.direction === "inbound" ? "Lead" : "Agent"}: ${m.body}`)
     .join("\n");
 
-  const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-  const model = env.OPENAI_REPLY_MODEL ?? "gpt-4.1-mini";
+  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const model = env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 
   const systemPrompt = [
     "You are analyzing a real estate lead's conversation to extract structured data.",
@@ -77,16 +77,16 @@ export async function POST(req: Request) {
     "Analyze and return JSON.",
   ].join("\n");
 
-  const completion = await openai.chat.completions.create({
+  const message = await anthropic.messages.create({
     model,
+    max_tokens: 1024,
+    system: systemPrompt,
     messages: [
-      { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    temperature: 0.2,
   });
 
-  const raw = completion.choices[0]?.message?.content?.trim();
+  const raw = message.content[0]?.type === "text" ? message.content[0].text.trim() : null;
   if (!raw) return new NextResponse("No analysis generated.", { status: 502 });
 
   let analysis;

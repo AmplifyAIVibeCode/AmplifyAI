@@ -13,7 +13,8 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
 
   return (
-    <div className="flex min-h-full flex-1 bg-zinc-50">
+    <div className="flex min-h-full flex-1 bg-zinc-50 relative">
+      {/* Dashboard background is always rendered, can be blurred by overlays */}
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-6">
         <header className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
           <div className="flex items-center gap-6">
@@ -36,7 +37,7 @@ export default async function AppLayout({
           <UserMenu email={user?.email ?? null} />
         </header>
 
-        <main className="flex flex-1 py-6">{children}</main>
+        <main className="flex flex-1 py-6 relative">{children}</main>
       </div>
     </div>
   );

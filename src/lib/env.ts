@@ -6,8 +6,8 @@ const publicEnvSchema = z.object({
 });
 
 const serverEnvSchema = publicEnvSchema.extend({
-  OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_REPLY_MODEL: z.string().min(1).optional(),
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  ANTHROPIC_MODEL: z.string().min(1).optional(),
 });
 
 let cachedPublicEnv: z.infer<typeof publicEnvSchema> | null = null;
@@ -38,8 +38,8 @@ export function getServerEnv() {
   if (cachedServerEnv) return cachedServerEnv;
   const parsed = serverEnvSchema.safeParse({
     ...getPublicEnv(),
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    OPENAI_REPLY_MODEL: process.env.OPENAI_REPLY_MODEL,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    ANTHROPIC_MODEL: process.env.ANTHROPIC_MODEL,
   });
   if (!parsed.success) {
     throw new Error(

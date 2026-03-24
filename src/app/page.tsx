@@ -1,4 +1,20 @@
+"use client";
+
 import Link from "next/link";
+import { useAuthModal } from "@/contexts/auth-modal-context";
+
+function SignInButton() {
+  const { openSignInModal } = useAuthModal();
+
+  return (
+    <button
+      onClick={openSignInModal}
+      className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-200/80 bg-white/60 px-7 text-sm font-medium text-zinc-700 backdrop-blur-sm transition-all hover:bg-white hover:text-zinc-950"
+    >
+      Sign in
+    </button>
+  );
+}
 
 export default function Home() {
   return (
@@ -81,12 +97,7 @@ export default function Home() {
           >
             Get started free
           </Link>
-          <Link
-            href="/login"
-            className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-200/80 bg-white/60 px-7 text-sm font-medium text-zinc-700 backdrop-blur-sm transition-all hover:bg-white hover:text-zinc-950"
-          >
-            Sign in
-          </Link>
+          <SignInButton />
         </div>
 
         {/* Feature pills */}

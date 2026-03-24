@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { getServerEnv } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,8 +15,8 @@ const bodySchema = z.object({
 export async function POST(req: Request) {
   const env = getServerEnv();
 
-  if (!env.OPENAI_API_KEY) {
-    return new NextResponse("Missing OPENAI_API_KEY.", { status: 500 });
+  if (!env.ANTHROPIC_API_KEY) {
+    return new NextResponse("Missing ANTHROPIC_API_KEY.", { status: 500 });
   }
 
   const supabase = await createSupabaseServerClient();
@@ -86,19 +86,19 @@ export async function POST(req: Request) {
     .filter(Boolean)
     .join("\n");
 
-  const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-  const model = env.OPENAI_REPLY_MODEL ?? "gpt-4.1-mini";
+  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const model = env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 
-  const completion = await openai.chat.completions.create({
+  const message = await anthropic.messages.create({
     model,
+    max_tokens: 1024,
+    system: systemPrompt,
     messages: [
-      { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    temperature: 0.5,
   });
 
-  const suggestion = completion.choices[0]?.message?.content?.trim();
+  const suggestion = message.content[0]?.type === "text" ? message.content[0].text.trim() : null;
   if (!suggestion)
     return new NextResponse("No suggestion generated.", { status: 502 });
 

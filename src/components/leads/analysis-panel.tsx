@@ -117,12 +117,14 @@ export function LeadAnalysisPanel({ leadId, analysis }: Props) {
         variant={hasAnalysis ? "secondary" : "primary"}
         onClick={onAnalyze}
         disabled={isLoading}
+        className="h-10 px-5 rounded-xl shadow-sm"
+        aria-label={hasAnalysis ? "Re-analyze lead" : "Analyze lead"}
       >
         {isLoading
           ? "Analyzing…"
           : hasAnalysis
             ? "Re-analyze"
-            : "🔍 Analyze Lead"}
+            : "Analyze Lead"}
       </Button>
     </div>
   );

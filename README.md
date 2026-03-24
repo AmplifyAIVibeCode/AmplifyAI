@@ -6,7 +6,7 @@
 
 - **Frontend**: Next.js (App Router) + React + Tailwind
 - **Backend/DB/Auth**: Supabase (Postgres + Auth + RLS)
-- **AI**: OpenAI API (server-side route)
+- **AI**: Claude API via Anthropic SDK (server-side route)
 - **Hosting**: Vercel (frontend) + Supabase (backend)
 
 ## Local setup
@@ -21,7 +21,7 @@ npm install
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `OPENAI_API_KEY` (server-only)
+- `ANTHROPIC_API_KEY` (server-only)
 
 3. Create your Supabase schema
 
